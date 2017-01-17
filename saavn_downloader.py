@@ -6,6 +6,7 @@ import os
 import requests
 from json import JSONDecoder
 import base64
+import wget
 
 from pyDes import *
 
@@ -53,3 +54,13 @@ for song in songs_json:
     dec_url = des_cipher.decrypt(enc_url,padmode=PAD_PKCS5).decode('utf-8')
     dec_url = base_url + dec_url.replace('mp3:audios','') + '.mp3'
     print(dec_url,'\n')
+    album = obj['album']
+    if not os.path.exists(album):
+            os.makedirs(album)
+
+    path = os.path.join(obj['album'], obj['title'] +'.mp3')
+
+    #filename = wget.download(dec_url,out=obj['album'])
+    filename = wget.download(dec_url,out=path)
+    
+
