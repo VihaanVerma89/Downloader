@@ -7,6 +7,7 @@ import requests
 from json import JSONDecoder
 import base64
 import wget
+import sys
 
 from pyDes import *
 
@@ -32,35 +33,43 @@ json_decoder = JSONDecoder()
 # these operations should be performed at the server side.
 des_cipher = des(b"38346591", ECB, b"\0\0\0\0\0\0\0\0" , pad=None, padmode=PAD_PKCS5)
 
-
-input_url = input('Enter the song url:').strip()
-
-try:
-    res = requests.get(input_url, proxies=proxies, headers=headers)
-except Exception as e:
-    print('Error accesssing website error: '+e)
-    sys.exit()
+albums = sys.argv
+albums = albums[1:]
+for  album in albums:
+    print album
 
 
-soup = BeautifulSoup(res.text,"lxml")
+    #print albums
 
-# Encrypted url to the mp3 are stored in the webpage
-songs_json = soup.find_all('div',{'class':'hide song-json'})
+    #input_url = input('Enter the song url:').strip()
+    input_url = album
 
-for song in songs_json:
-    obj = json_decoder.decode(song.text)
-    print(obj['album'],'-',obj['title'])
-    enc_url = base64.b64decode(obj['url'].strip())
-    dec_url = des_cipher.decrypt(enc_url,padmode=PAD_PKCS5).decode('utf-8')
-    dec_url = base_url + dec_url.replace('mp3:audios','') + '.mp3'
-    print(dec_url,'\n')
-    album = obj['album']
-    if not os.path.exists(album):
-            os.makedirs(album)
+    try:
+        res = requests.get(input_url, proxies=proxies, headers=headers)
+    except Exception as e:
+        print('Error accesssing website error: '+e)
+        sys.exit()
 
-    path = os.path.join(obj['album'], obj['title'] +'.mp3')
 
-    #filename = wget.download(dec_url,out=obj['album'])
-    filename = wget.download(dec_url,out=path)
-    
+    soup = BeautifulSoup(res.text,"lxml")
+
+    # Encrypted url to the mp3 are stored in the webpage
+    songs_json = soup.find_all('div',{'class':'hide song-json'})
+
+    for song in songs_json:
+        obj = json_decoder.decode(song.text)
+        print(obj['album'],'-',obj['title'])
+        enc_url = base64.b64decode(obj['url'].strip())
+        dec_url = des_cipher.decrypt(enc_url,padmode=PAD_PKCS5).decode('utf-8')
+        dec_url = base_url + dec_url.replace('mp3:audios','') + '.mp3'
+        print(dec_url,'\n')
+        album = obj['album']
+        if not os.path.exists(album):
+                os.makedirs(album)
+
+        path = os.path.join(obj['album'], obj['title'] +'.mp3')
+
+        #filename = wget.download(dec_url,out=obj['album'])
+        filename = wget.download(dec_url,out=path)
+        
 
