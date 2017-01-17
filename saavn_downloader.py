@@ -55,6 +55,11 @@ for  album in albums:
 
     # Encrypted url to the mp3 are stored in the webpage
     songs_json = soup.find_all('div',{'class':'hide song-json'})
+    if not os.path.exists('albums'):
+        os.makedirs('albums')
+
+    os.chdir('albums')
+
 
     for song in songs_json:
         obj = json_decoder.decode(song.text)
@@ -63,6 +68,7 @@ for  album in albums:
         dec_url = des_cipher.decrypt(enc_url,padmode=PAD_PKCS5).decode('utf-8')
         dec_url = base_url + dec_url.replace('mp3:audios','') + '.mp3'
         print(dec_url,'\n')
+        #album = obj['album']
         album = obj['album']
         if not os.path.exists(album):
                 os.makedirs(album)
